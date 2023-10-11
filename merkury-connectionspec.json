@@ -1,0 +1,296 @@
+{
+    "name": "Merkury Source",
+	"description": "Merkury Source Connector V2.0",
+    "providerId": "0ed90a81-07f4-4586-8190-b40eccef1c5a",
+    "version": "2.0",
+    "authSpec": [
+        {
+            "name": "Access Key",
+            "type": "KeyBased",
+            "spec": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "description": "defines auth params required for connecting to Merkury Source",
+                "properties": {
+                    "s3AccessKey": {
+                        "type": "string",
+                        "description": "access key id"
+                    },
+                    "s3SecretKey": {
+                        "type": "string",
+                        "description": "Secret access key for the user account",
+                        "format": "password"
+                    },
+                    "s3SessionToken": {
+                        "type": "string",
+                        "description": "Session Token for the user account",
+                        "format": "password"
+                    },
+                    "serviceUrl": {
+                        "type": "string",
+                        "description": "Specify the custom S3 endpoint to connect.",
+                        "examples": [
+                            "https://<service url>"
+                        ]
+                    },
+                    "bucketName": {
+                        "type": "string",
+                        "description": "Allowed bucket name in case user has restricted access.",
+                        "examples": [
+                            "my-bucket"
+                        ]
+                    },
+                    "folderPath": {
+                        "type": "string",
+                        "description": "Allowed folder path in case user has restricted access.",
+                        "examples": [
+                            "data-folder",
+                            "data-folder/parquetFolder"
+                        ]
+                    }
+                },
+                "required": [
+                    "s3AccessKey",
+                    "s3SecretKey"
+                ]
+            }
+        }
+    ],
+    "sourceSpec": {
+        "type": "Cloud Storage",
+        "spec": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "description": "defines params required when Merkury Source conenction is used as a source in flow",
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": "input path for copying files, can be a folder path, file path or a wildcard pattern"
+                },
+                "recursive": {
+                    "type": "boolean",
+                    "description": "indicates recursive copy in case of folder or wild card path, default is false"
+                }
+            },
+            "required": [
+                "path"
+            ]
+        },
+        "attributes": {
+            "uiAttributes": {
+                "documentationLink": "http://www.adobe.com",
+                "isSource": true,
+                "specIdentifier": "Merkury Source",
+                "isGuidedTourSupported": true,
+                "category": {
+                    "key": "cloudStorage"
+                },
+                "icon": {
+                    "key": "Merkury"
+                },
+                "description": {
+                    "key": "MerkuryDescription"
+                },
+                "label": {
+                    "key": "MerkuryLabel"
+                }
+            }
+        }
+    },
+    "exploreSpec": {
+        "name": "FileSystem",
+        "type": "FileSystem",
+        "requestSpec": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "description": "defines explorable objects",
+            "properties": {
+                "objectType": {
+                    "type": "string",
+                    "enum": [
+                        "file",
+                        "folder",
+                        "root"
+                    ]
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "objectType": {
+                                "enum": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "description": "defines file to get schema or preview of."
+                            },
+                            "fileType": {
+                                "type": "string",
+                                "enum": [
+                                    "delimited"
+                                ]
+                            },
+                            "preview": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "object",
+                            "fileType"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "objectType": {
+                                "enum": [
+                                    "folder"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "object": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "object"
+                        ]
+                    }
+                }
+            ]
+        },
+        "responseSpec": {
+            "root": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "path": {
+                            "type": "string"
+                        },
+                        "canPreview": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "canFetchSchema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                }
+            },
+            "folder": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "path": {
+                            "type": "string"
+                        },
+                        "canPreview": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "canFetchSchema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                }
+            },
+            "file": {
+                "delimited": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "format": {
+                            "type": "string"
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "columns": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "data": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "attributes": {
+        "category": "Cloud Storage",
+        "connectorName": "Merkury V2.0",
+        "isSource": true,
+        "isDraftModeSupported": true,
+        "documentationLink": "http://www.google.com",
+        "uiAttributes": {
+            "apiFeatures": {
+                "explorePaginationSupported": false
+            }
+        }
+    },
+    "permissionsInfo": {
+        "view": [
+            {
+                "@type": "lowLevel",
+                "name": "EnterpriseSource",
+                "permissions": [
+                    "read"
+                ]
+            }
+        ],
+        "manage": [
+            {
+                "@type": "lowLevel",
+                "name": "EnterpriseSource",
+                "permissions": [
+                    "write"
+                ]
+            }
+        ]
+    }
+}
